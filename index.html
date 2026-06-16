@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Peakz Padel — Mollie Booking</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --green-dark: #1a3d2b;
+    --green-mid: #25523a;
+    --green-light: #7ec85a;
+    --green-pale: #d4edda;
+    --blue-dark: #0c447c;
+    --blue-pale: #d4e4f7;
+    --amber-pale: #faeeda;
+    --amber-dark: #633806;
+    --red-pale: #fcebeb;
+    --red-dark: #a32d2d;
+    --bg: #f7f7f5;
+    --surface: #ffffff;
+    --border: rgba(0,0,0,0.10);
+    --border-strong: rgba(0,0,0,0.18);
+    --text: #1c1c1a;
+    --text-muted: #6b6b67;
+    --text-hint: #9b9b96;
+    --radius-sm: 6px;
+    --radius-md: 10px;
+    --radius-lg: 14px;
+    --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
+  }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+  .app { max-width: 760px; margin: 0 auto; padding: 2rem 1rem 4rem; }
+
+  /* Header */
+  .header { display: flex; align-items: center; gap: 14px; margin-bottom: 2rem; }
+  .logo { width: 48px; height: 48px; background: var(--green-dark); border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .logo svg { width: 26px; height: 26px; fill: var(--green-light); }
+  .header h1 { font-size: 20px; font-weight: 600; color: var(--text); }
+  .header p { font-size: 13px; color: var(--text-muted); margin-top: 2px; }
+
+  /* Config banner */
+  .config-banner { background: #fff8e1; border: 1px solid #f0c040; border-radius: var(--radius-md); padding: 14px 16px; margin-bottom: 1.5rem; font-size: 13px; display: none; }
+  .config-banner.show { display: flex; gap: 10px; align-items: flex-start; }
+  .config-banner a { color: var(--blue-dark); }
+
+  /* Tabs */
+  .tabs { display: flex; gap: 2px; background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 4px; margin-bottom: 1.5rem; }
+  .tab { flex: 1; padding: 9px 12px; font-size: 13px; font-weight: 500; cursor: pointer; border: none; background: none; color: var(--text-muted); border-radius: var(--radius-md); transition: all 0.15s; font-family: inherit; }
+  .tab.active { background: var(--green-dark); color: white; }
+  .tab:hover:not(.active) { background: var(--bg); color: var(--text); }
+
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  /* Cards */
+  .card { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 1.25rem; box-shadow: var(--shadow); }
+
+  /* Week selector */
+  .week-bar { display: flex; align-items: center; gap: 10px; margin-bottom: 1.25rem; }
+  .week-bar label { font-size: 13px; color: var(--text-muted); white-space: nowrap; }
+  .week-bar select { flex: 1; font-size: 13px; font-family: inherit; background: var(--surface); border: 0.5px solid var(--border-strong); border-radius: var(--radius-sm); padding: 8px 10px; color: var(--text); }
+
+  /* Stats */
+  .stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 1.25rem; }
+  .stat { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius-md); padding: 14px; box-shadow: var(--shadow); }
+  .stat-label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 4px; }
+  .stat-val { font-size: 26px; font-weight: 600; color: var(--text); }
+
+  /* Slot grid */
+  .slot-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 1.5rem; }
+  @media (max-width: 520px) { .slot-grid { grid-template-columns: 1fr; } }
+  .slot-card { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 1.25rem; box-shadow: var(--shadow); }
+  .slot-head { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
+  .slot-day { font-size: 16px; font-weight: 600; }
+  .pill { font-size: 11px; font-weight: 600; padding: 3px 9px; border-radius: 20px; }
+  .pill-mon { background: var(--green-pale); color: var(--green-dark); }
+  .pill-thu { background: var(--blue-pale); color: var(--blue-dark); }
+  .slot-meta { font-size: 12px; color: var(--text-muted); margin-bottom: 14px; line-height: 1.7; }
+
+  /* Court spots */
+  .spots { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 14px; }
+  .spot { border: 0.5px solid var(--border-strong); border-radius: var(--radius-sm); padding: 7px 9px; font-size: 12px; display: flex; align-items: center; gap: 7px; cursor: pointer; transition: all 0.15s; user-select: none; }
+  .spot.open { background: var(--bg); color: var(--text-muted); }
+  .spot.open:hover { background: var(--green-pale); border-color: var(--green-light); color: var(--green-dark); }
+  .spot.booked { background: var(--green-dark); border-color: var(--green-dark); color: white; }
+  .spot.mine { background: var(--green-light); border-color: var(--green-light); color: var(--green-dark); font-weight: 600; }
+  .spot-icon { width: 18px; height: 18px; flex-shrink: 0; }
+  .spot-name { font-size: 11px; line-height: 1.2; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+  .book-btn { width: 100%; padding: 9px; font-size: 13px; font-weight: 500; cursor: pointer; border-radius: var(--radius-sm); font-family: inherit; transition: all 0.15s; }
+  .book-btn.primary { background: var(--green-dark); border: none; color: white; }
+  .book-btn.primary:hover { background: var(--green-mid); }
+  .book-btn.danger { background: none; border: 0.5px solid #f0a0a0; color: var(--red-dark); margin-top: 6px; }
+  .book-btn.danger:hover { background: var(--red-pale); }
+  .book-btn:disabled { opacity: 0.38; cursor: not-allowed; }
+  .full-notice { font-size: 11px; color: var(--red-dark); background: var(--red-pale); padding: 4px 9px; border-radius: 20px; display: inline-block; margin-bottom: 8px; }
+
+  /* Meeting room */
+  .meeting-card { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 1.25rem; box-shadow: var(--shadow); margin-bottom: 1.5rem; }
+  .meeting-head { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+  .meeting-icon { width: 36px; height: 36px; background: var(--blue-dark); border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .meeting-icon svg { width: 18px; height: 18px; fill: #85b7eb; }
+  .meeting-title { font-size: 15px; font-weight: 600; }
+  .meeting-sub { font-size: 12px; color: var(--text-muted); }
+  .tip { font-size: 12px; color: var(--green-dark); background: var(--green-pale); padding: 7px 11px; border-radius: var(--radius-sm); margin: 10px 0; }
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .form-field { display: flex; flex-direction: column; gap: 5px; }
+  .form-field.full { grid-column: 1 / -1; }
+  .form-label { font-size: 11px; color: var(--text-muted); font-weight: 500; text-transform: uppercase; letter-spacing: 0.04em; }
+  .form-field input, .form-field select, .form-field textarea { font-family: inherit; font-size: 13px; border: 0.5px solid var(--border-strong); border-radius: var(--radius-sm); padding: 8px 10px; background: var(--bg); color: var(--text); }
+  .form-field input:focus, .form-field select:focus, .form-field textarea:focus { outline: 2px solid var(--green-light); border-color: transparent; }
+  .form-field textarea { resize: vertical; min-height: 64px; }
+  .name-input-bar { display: flex; align-items: center; gap: 8px; margin-bottom: 1rem; }
+  .name-input-bar label { font-size: 13px; color: var(--text-muted); white-space: nowrap; }
+  .name-input-bar input { flex: 1; font-size: 13px; font-family: inherit; border: 0.5px solid var(--border-strong); border-radius: var(--radius-sm); padding: 8px 10px; background: var(--surface); color: var(--text); }
+  .name-input-bar input:focus { outline: 2px solid var(--green-light); border-color: transparent; }
+
+  /* Calendar */
+  .cal-nav { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; }
+  .cal-month { font-size: 16px; font-weight: 600; }
+  .cal-btn { background: var(--surface); border: 0.5px solid var(--border-strong); border-radius: var(--radius-sm); width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--text-muted); font-size: 16px; }
+  .cal-btn:hover { background: var(--bg); }
+  .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; }
+  .cal-dh { font-size: 11px; color: var(--text-muted); text-align: center; padding: 5px 0; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; }
+  .cal-cell { min-height: 70px; border-radius: var(--radius-sm); padding: 6px; font-size: 12px; background: var(--surface); border: 0.5px solid var(--border); }
+  .cal-cell.other { opacity: 0.3; background: transparent; border-color: transparent; }
+  .cal-cell.today { border-color: var(--green-light); }
+  .cal-num { font-size: 11px; color: var(--text-muted); margin-bottom: 3px; font-weight: 500; }
+  .cal-ev { border-radius: 3px; padding: 2px 5px; font-size: 10px; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 600; }
+  .ev-mon { background: var(--green-pale); color: var(--green-dark); }
+  .ev-thu { background: var(--blue-pale); color: var(--blue-dark); }
+  .ev-meet { background: var(--amber-pale); color: var(--amber-dark); }
+  .legend { display: flex; gap: 14px; flex-wrap: wrap; margin-top: 1rem; }
+  .leg-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-muted); }
+  .leg-dot { width: 10px; height: 10px; border-radius: 2px; }
+
+  /* Roster */
+  .roster-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 0.5px solid var(--border); font-size: 13px; gap: 8px; }
+  .roster-row:last-child { border-bottom: none; }
+  .roster-name { font-weight: 500; color: var(--text); }
+  .roster-detail { font-size: 11px; color: var(--text-muted); margin-top: 1px; }
+  .status-pill { font-size: 10px; font-weight: 600; padding: 3px 9px; border-radius: 20px; white-space: nowrap; }
+  .pill-padel { background: var(--green-pale); color: var(--green-dark); }
+  .pill-meeting { background: var(--amber-pale); color: var(--amber-dark); }
+  .empty-state { color: var(--text-muted); font-size: 13px; padding: 2rem 0; text-align: center; }
+
+  /* Toast */
+  .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(20px); background: var(--green-dark); color: white; padding: 11px 20px; border-radius: var(--radius-md); font-size: 13px; font-weight: 500; opacity: 0; transition: all 0.25s; pointer-events: none; z-index: 9999; white-space: nowrap; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  /* Loading overlay */
+  .loading { position: fixed; inset: 0; background: rgba(255,255,255,0.7); display: flex; align-items: center; justify-content: center; z-index: 9998; font-size: 14px; color: var(--text-muted); gap: 10px; display: none; }
+  .spinner { width: 20px; height: 20px; border: 2px solid var(--border); border-top-color: var(--green-dark); border-radius: 50%; animation: spin 0.7s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <div class="header">
+    <div class="logo">
+      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 2c4.41 0 8 3.59 8 8 0 1.48-.41 2.87-1.12 4.06L7.94 5.12C9.13 4.41 10.52 4 12 4zm0 16c-4.41 0-8-3.59-8-8 0-1.48.41-2.87 1.12-4.06l10.94 10.94C14.87 19.59 13.48 20 12 20z"/></svg>
+    </div>
+    <div>
+      <h1>Peakz Padel — Mollie</h1>
+      <p>Mon · Sloterdijk &nbsp;·&nbsp; Thu · Mollie Dome &nbsp;·&nbsp; 4 pax per slot</p>
+    </div>
+  </div>
+
+  <div class="config-banner" id="config-banner">
+    ⚠️ &nbsp;<span>Google Sheets not connected yet. Bookings are stored locally only. <a href="#" onclick="showSetup()">Set up Google Sheets →</a></span>
+  </div>
+
+  <!-- Your name -->
+  <div class="name-input-bar">
+    <label for="my-name">Your name:</label>
+    <input type="text" id="my-name" placeholder="e.g. Charlotte" maxlength="30" oninput="saveName()" />
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('book', this)">📅 Book a slot</button>
+    <button class="tab" onclick="switchTab('calendar', this)">🗓 Calendar</button>
+    <button class="tab" onclick="switchTab('roster', this)">👥 Roster</button>
+  </div>
+
+  <!-- BOOK TAB -->
+  <div id="tab-book" class="panel active">
+    <div class="week-bar">
+      <label for="week-sel">Week:</label>
+      <select id="week-sel" onchange="renderSlots()"></select>
+    </div>
+    <div class="stats-row">
+      <div class="stat"><div class="stat-label">Slots this week</div><div class="stat-val">2</div></div>
+      <div class="stat"><div class="stat-label">Your bookings</div><div class="stat-val" id="stat-mine">0</div></div>
+      <div class="stat"><div class="stat-label">Open spots</div><div class="stat-val" id="stat-open">8</div></div>
+    </div>
+    <div class="slot-grid" id="slot-grid"></div>
+
+    <!-- Meeting room -->
+    <div class="meeting-card">
+      <div class="meeting-head">
+        <div class="meeting-icon">
+          <svg viewBox="0 0 24 24"><path d="M4 4h16v12H4zm2 2v8h12V6H6zm-2 14h16v2H4z"/></svg>
+        </div>
+        <div>
+          <div class="meeting-title">Meeting room — Mollie Dome</div>
+          <div class="meeting-sub">Available every day · Book separately</div>
+        </div>
+      </div>
+      <div class="tip">💡 Best combined with Thursday padel at 18:00 — same venue!</div>
+      <div class="form-grid">
+        <div class="form-field">
+          <span class="form-label">Date</span>
+          <input type="date" id="meet-date" />
+        </div>
+        <div class="form-field">
+          <span class="form-label">Time</span>
+          <select id="meet-time">
+            <option>09:00</option><option>10:00</option><option>11:00</option>
+            <option>12:00</option><option>13:00</option><option>14:00</option>
+            <option>15:00</option><option>16:00</option><option selected>17:00</option>
+            <option>18:00</option><option>19:00</option>
+          </select>
+        </div>
+        <div class="form-field full">
+          <span class="form-label">Purpose / notes</span>
+          <textarea id="meet-notes" placeholder="e.g. Team debrief after Thursday padel…"></textarea>
+        </div>
+        <div class="form-field full">
+          <button class="book-btn primary" onclick="bookMeeting()">Reserve meeting room</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CALENDAR TAB -->
+  <div id="tab-calendar" class="panel">
+    <div class="cal-nav">
+      <button class="cal-btn" onclick="prevMonth()">‹</button>
+      <div class="cal-month" id="cal-label"></div>
+      <button class="cal-btn" onclick="nextMonth()">›</button>
+    </div>
+    <div class="cal-grid" id="cal-grid"></div>
+    <div class="legend">
+      <div class="leg-item"><div class="leg-dot" style="background:var(--green-pale)"></div>Padel Mon · Sloterdijk</div>
+      <div class="leg-item"><div class="leg-dot" style="background:var(--blue-pale)"></div>Padel Thu · Mollie Dome</div>
+      <div class="leg-item"><div class="leg-dot" style="background:var(--amber-pale)"></div>Meeting room</div>
+    </div>
+  </div>
+
+  <!-- ROSTER TAB -->
+  <div id="tab-roster" class="panel">
+    <div class="stats-row">
+      <div class="stat"><div class="stat-label">Total bookings</div><div class="stat-val" id="r-total">0</div></div>
+      <div class="stat"><div class="stat-label">Mon sessions</div><div class="stat-val" id="r-mon">0</div></div>
+      <div class="stat"><div class="stat-label">Thu sessions</div><div class="stat-val" id="r-thu">0</div></div>
+    </div>
+    <div class="card">
+      <div id="roster-list"></div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<div class="loading" id="loading"><div class="spinner"></div> Saving…</div>
+
+<script>
+// ─────────────────────────────────────────────
+// CONFIG — paste your Apps Script Web App URL here
+// ─────────────────────────────────────────────
+const APPS_SCRIPT_URL = 'YOUR_APPS_SCRIPT_URL_HERE';
+// ─────────────────────────────────────────────
+
+const CONNECTED = APPS_SCRIPT_URL !== 'YOUR_APPS_SCRIPT_URL_HERE';
+let localBookings = {};
+let myName = '';
+let calYear = 2026, calMonth = 5;
+
+// ── Persistence helpers ──
+function loadLocal() {
+  try { localBookings = JSON.parse(localStorage.getItem('peakz_bookings') || '{}'); } catch(e) { localBookings = {}; }
+  myName = localStorage.getItem('peakz_name') || '';
+  document.getElementById('my-name').value = myName;
+}
+function saveLocal() {
+  localStorage.setItem('peakz_bookings', JSON.stringify(localBookings));
+}
+function saveName() {
+  myName = document.getElementById('my-name').value.trim();
+  localStorage.setItem('peakz_name', myName);
+}
+
+// ── Google Sheets via Apps Script ──
+async function sheetGet() {
+  if (!CONNECTED) return null;
+  try {
+    const r = await fetch(APPS_SCRIPT_URL + '?action=get');
+    return await r.json();
+  } catch(e) { return null; }
+}
+async function sheetPost(payload) {
+  if (!CONNECTED) return;
+  setLoading(true);
+  try {
+    await fetch(APPS_SCRIPT_URL, {
+      method: 'POST', body: JSON.stringify(payload),
+      headers: { 'Content-Type': 'text/plain' }
+    });
+  } catch(e) {}
+  setLoading(false);
+}
+
+function setLoading(v) { document.getElementById('loading').style.display = v ? 'flex' : 'none'; }
+
+// ── Week helpers ──
+function getWeeks() {
+  const weeks = [];
+  let d = new Date(2026, 5, 1);
+  const end = new Date(2026, 11, 31);
+  const dow = d.getDay();
+  d.setDate(d.getDate() + (dow === 0 ? -6 : 1 - dow));
+  while (d <= end) { weeks.push(new Date(d)); d = new Date(d); d.setDate(d.getDate() + 7); }
+  return weeks;
+}
+function fmt(d) { return d.toISOString().split('T')[0]; }
+function fmtD(d) { return d.toLocaleDateString('en-NL', { day: 'numeric', month: 'short' }); }
+
+function initWeekSel() {
+  const sel = document.getElementById('week-sel');
+  const weeks = getWeeks();
+  const today = new Date(); today.setHours(0,0,0,0);
+  let cur = 0;
+  weeks.forEach((w, i) => {
+    const thu = new Date(w); thu.setDate(w.getDate() + 3);
+    const o = document.createElement('option');
+    o.value = i;
+    o.textContent = `Mon ${fmtD(w)} & Thu ${fmtD(thu)}`;
+    sel.appendChild(o);
+    if (w <= today && today < new Date(w.getTime() + 7*86400000)) cur = i;
+  });
+  sel.value = cur;
+}
+
+function getSlotDates() {
+  const weeks = getWeeks();
+  const w = weeks[parseInt(document.getElementById('week-sel').value)];
+  const mon = new Date(w);
+  const thu = new Date(w); thu.setDate(w.getDate() + 3);
+  return { mon, thu };
+}
+
+// ── Render slots ──
+function renderSlots() {
+  const { mon, thu } = getSlotDates();
+  const slots = [
+    { label: 'Monday', day: 'mon', date: mon, loc: 'Sloterdijk', pillCls: 'pill-mon' },
+    { label: 'Thursday', day: 'thu', date: thu, loc: 'Mollie Dome', pillCls: 'pill-thu' }
+  ];
+  const grid = document.getElementById('slot-grid');
+  grid.innerHTML = '';
+  let totalOpen = 0, myCount = 0;
+
+  slots.forEach(s => {
+    const key = fmt(s.date) + '_' + s.day;
+    const booked = localBookings[key] || [];
+    const myIdx = booked.indexOf(myName || '__none__');
+    const isFull = booked.length >= 4;
+    totalOpen += Math.max(0, 4 - booked.length);
+    if (myIdx >= 0) myCount++;
+
+    const spotsHTML = [0,1,2,3].map(i => {
+      const name = booked[i] || null;
+      const isMe = name && myName && name === myName;
+      const cls = name ? (isMe ? 'mine' : 'booked') : 'open';
+      const label = name ? (isMe ? 'You' : name) : 'Open';
+      const iconPath = name
+        ? `<path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/>`
+        : `<path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>`;
+      return `<div class="spot ${cls}" onclick="toggleSpot('${key}',${i})">
+        <svg class="spot-icon" viewBox="0 0 24 24" fill="currentColor">${iconPath}</svg>
+        <span class="spot-name">${label}</span>
+      </div>`;
+    }).join('');
+
+    const fullHTML = isFull && myIdx < 0 ? `<div class="full-notice">Slot full</div>` : '';
+    const hasMe = myIdx >= 0;
+    const btnLabel = hasMe ? 'Cancel my spot' : (isFull ? 'Slot full' : 'Book my spot');
+    const btnCls = hasMe ? 'danger' : 'primary';
+    const btnDis = isFull && !hasMe ? 'disabled' : '';
+
+    const card = document.createElement('div');
+    card.className = 'slot-card';
+    card.innerHTML = `
+      <div class="slot-head">
+        <div class="slot-day">${s.label}</div>
+        <span class="pill ${s.pillCls}">${fmtD(s.date)}</span>
+      </div>
+      <div class="slot-meta">🕕 18:00 – 19:30 &nbsp;·&nbsp; 📍 ${s.loc}<br>${booked.length}/4 spots taken</div>
+      <div class="spots">${spotsHTML}</div>
+      ${fullHTML}
+      <button class="book-btn ${btnCls}" ${btnDis} onclick="quickBook('${key}')">${btnLabel}</button>
+    `;
+    grid.appendChild(card);
+  });
+
+  document.getElementById('stat-mine').textContent = myCount;
+  document.getElementById('stat-open').textContent = totalOpen;
+  updateRoster();
+}
+
+async function quickBook(key) {
+  if (!myName) { showToast('Please enter your name first!'); document.getElementById('my-name').focus(); return; }
+  if (!localBookings[key]) localBookings[key] = [];
+  const b = localBookings[key];
+  const idx = b.indexOf(myName);
+  if (idx >= 0) {
+    b.splice(idx, 1);
+    showToast('Booking cancelled.');
+  } else if (b.length < 4) {
+    b.push(myName);
+    showToast('Spot booked! See you on the court 🎾');
+  } else { showToast('This slot is full.'); return; }
+  saveLocal();
+  await sheetPost({ action: 'setBookings', data: localBookings });
+  renderSlots();
+  renderCalendar();
+}
+
+async function toggleSpot(key, idx) {
+  if (!localBookings[key]) localBookings[key] = [];
+  const b = localBookings[key];
+  if (idx < b.length) {
+    const removed = b.splice(idx, 1)[0];
+    showToast(removed + ' removed.');
+  } else if (b.length < 4) {
+    const name = prompt('Enter name for this spot:');
+    if (!name || !name.trim()) return;
+    b.push(name.trim());
+    showToast(name.trim() + ' added!');
+  } else { showToast('Slot is full.'); return; }
+  saveLocal();
+  await sheetPost({ action: 'setBookings', data: localBookings });
+  renderSlots();
+  renderCalendar();
+}
+
+async function bookMeeting() {
+  if (!myName) { showToast('Please enter your name first!'); return; }
+  const date = document.getElementById('meet-date').value;
+  const time = document.getElementById('meet-time').value;
+  const notes = document.getElementById('meet-notes').value;
+  if (!date) { showToast('Please pick a date.'); return; }
+  if (!localBookings['meetings']) localBookings['meetings'] = [];
+  localBookings['meetings'].push({ name: myName, date, time, notes });
+  saveLocal();
+  await sheetPost({ action: 'setBookings', data: localBookings });
+  document.getElementById('meet-date').value = '';
+  document.getElementById('meet-notes').value = '';
+  showToast('Meeting room reserved at Mollie Dome! 🏢');
+  renderCalendar();
+  updateRoster();
+}
+
+// ── Calendar ──
+function renderCalendar() {
+  const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  document.getElementById('cal-label').textContent = months[calMonth] + ' ' + calYear;
+  const grid = document.getElementById('cal-grid');
+  grid.innerHTML = '';
+  ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].forEach(d => {
+    const h = document.createElement('div'); h.className = 'cal-dh'; h.textContent = d; grid.appendChild(h);
+  });
+  const first = new Date(calYear, calMonth, 1);
+  const startDay = first.getDay() === 0 ? 6 : first.getDay() - 1;
+  const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
+  const prevDays = new Date(calYear, calMonth, 0).getDate();
+  const today = new Date(); today.setHours(0,0,0,0);
+  const meetings = (localBookings['meetings'] || []);
+
+  let cells = [];
+  for (let i = startDay - 1; i >= 0; i--) cells.push({ day: prevDays - i, thisMonth: false, date: new Date(calYear, calMonth - 1, prevDays - i) });
+  for (let d = 1; d <= daysInMonth; d++) cells.push({ day: d, thisMonth: true, date: new Date(calYear, calMonth, d) });
+  while (cells.length % 7 !== 0) { const e = cells.length - daysInMonth - startDay + 1; cells.push({ day: e, thisMonth: false, date: new Date(calYear, calMonth + 1, e) }); }
+
+  cells.forEach(c => {
+    const cell = document.createElement('div');
+    cell.className = 'cal-cell' + (!c.thisMonth ? ' other' : '') + (c.date.getTime() === today.getTime() ? ' today' : '');
+    const num = document.createElement('div'); num.className = 'cal-num'; num.textContent = c.day; cell.appendChild(num);
+    const dow = c.date.getDay();
+    const ds = fmt(c.date);
+    if (c.thisMonth && calYear === 2026 && calMonth >= 5 && calMonth <= 11) {
+      if (dow === 1) {
+        const ev = document.createElement('div'); ev.className = 'cal-ev ev-mon';
+        const b = localBookings[ds + '_mon'];
+        ev.textContent = b && b.length ? `Padel ${b.length}/4` : 'Padel 18:00';
+        cell.appendChild(ev);
+      }
+      if (dow === 4) {
+        const ev = document.createElement('div'); ev.className = 'cal-ev ev-thu';
+        const b = localBookings[ds + '_thu'];
+        ev.textContent = b && b.length ? `Padel ${b.length}/4` : 'Padel 18:00';
+        cell.appendChild(ev);
+      }
+      meetings.forEach(m => {
+        if (m.date === ds) {
+          const ev = document.createElement('div'); ev.className = 'cal-ev ev-meet';
+          ev.textContent = `Meeting ${m.time}`; cell.appendChild(ev);
+        }
+      });
+    }
+    grid.appendChild(cell);
+  });
+}
+
+function prevMonth() {
+  calMonth--; if (calMonth < 0) { calMonth = 11; calYear--; }
+  if (calYear < 2026 || (calYear === 2026 && calMonth < 5)) { calYear = 2026; calMonth = 5; }
+  renderCalendar();
+}
+function nextMonth() {
+  calMonth++; if (calMonth > 11) { calMonth = 0; calYear++; }
+  if (calYear > 2026 || (calYear === 2026 && calMonth > 11)) { calYear = 2026; calMonth = 11; }
+  renderCalendar();
+}
+
+// ── Roster ──
+function updateRoster() {
+  const entries = [];
+  let monC = 0, thuC = 0;
+  Object.entries(localBookings).forEach(([key, val]) => {
+    if (key === 'meetings') return;
+    const [date, day] = key.split('_');
+    val.forEach(name => {
+      entries.push({ name, date, day });
+      if (day === 'mon') monC++; else thuC++;
+    });
+  });
+  (localBookings['meetings'] || []).forEach(m => {
+    entries.push({ name: m.name, date: m.date, day: 'meeting', time: m.time, notes: m.notes });
+  });
+  entries.sort((a,b) => a.date.localeCompare(b.date));
+  document.getElementById('r-total').textContent = entries.length;
+  document.getElementById('r-mon').textContent = monC;
+  document.getElementById('r-thu').textContent = thuC;
+  const list = document.getElementById('roster-list');
+  if (!entries.length) { list.innerHTML = '<div class="empty-state">No bookings yet — head to the Book tab!</div>'; return; }
+  list.innerHTML = entries.map(e => {
+    const d = new Date(e.date + 'T00:00');
+    const label = e.day === 'mon' ? 'Mon · Sloterdijk · 18:00' : e.day === 'thu' ? 'Thu · Mollie Dome · 18:00' : `Meeting Room · ${e.time}`;
+    const pillCls = e.day === 'meeting' ? 'pill-meeting' : 'pill-padel';
+    const pillTxt = e.day === 'meeting' ? 'meeting' : 'padel';
+    return `<div class="roster-row"><div><div class="roster-name">${e.name}</div><div class="roster-detail">${label} · ${fmtD(d)}</div></div><span class="status-pill ${pillCls}">${pillTxt}</span></div>`;
+  }).join('');
+}
+
+// ── UI helpers ──
+function switchTab(id, btn) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('tab-' + id).classList.add('active');
+  btn.classList.add('active');
+  if (id === 'calendar') renderCalendar();
+  if (id === 'roster') updateRoster();
+}
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2800);
+}
+function showSetup() { alert('Paste your Apps Script URL into APPS_SCRIPT_URL in index.html — see the setup guide!'); }
+
+// ── Init ──
+async function init() {
+  loadLocal();
+  initWeekSel();
+  if (!CONNECTED) document.getElementById('config-banner').classList.add('show');
+  else {
+    const remote = await sheetGet();
+    if (remote) { localBookings = remote; saveLocal(); }
+  }
+  renderSlots();
+  renderCalendar();
+}
+init();
+</script>
+</body>
+</html>
